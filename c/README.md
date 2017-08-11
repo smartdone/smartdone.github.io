@@ -3,5 +3,5 @@
 
 代码都是一句一句从第六版的C++ primer plus抄的
 
-- [函数探幽](/methodplus/README.md)
+- [函数探幽](./methodplus/README.md)
 
