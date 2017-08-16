@@ -1,6 +1,6 @@
 # 笔记
 
-> Welcome
+> 学习二进制安全过程中的一些笔记
 
 - [C++](/c/README.md)
 - [macOS security](./macos/index.md)
