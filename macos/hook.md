@@ -3,7 +3,7 @@
 在macos下面hook大致分为以下几种：
 
 1. [DYLD_INSERT_LIBRARIES](#DYLD_INSERT_LIBRARIES)。插入库hook方式，类似于linux平台的LD_PRELOAD方式，这种方式比较常见，除了可以hook常见的c/c++开发的程序库外，还可以hook系统库中的函数。
-2. SymbolTable Hook。符号表hook方式，类似于windows平台的IAT hook。
+2. [SymbolTable Hook](#SymbolTable Hook)。符号表hook方式，类似于windows平台的IAT hook。
 3. Method Swizzing。方法欺骗，这种hook方式是macos的objective runtime方式独有的，运用于objective-c/c++与swift的hook
 
 ## DYLD_INSERT_LIBRARIES
@@ -141,3 +141,38 @@ Mach-O Magic Number: 61616161
 ```
 
 这个程序首先构造了一个初始化的方法`init_funcs`，通过为方法添加预处理指令`__attribute__((constructor))`可以指定该方法为初始化方法，初始化方法会在动态库加载的时候最先被调用，这里这个方法的作用是获取原来三个系统函数的地址，并且保存下来使用。接着在代码里面实现自己要hook的函数的内容，与原函数名称一样。
+
+## SymbolTable Hook
+
+符号表hook，通过对目标程序的符号表做手脚达到hook的目的，Mach-O的程序中的符号分为两种，一种是直接在动态链接程序的时候就需要绑定的符号non-lazily symol，即非延迟绑定的符号、他保存在`__DATA`段中的`__nl_symbol_ptr`节区中。另一种是程序运行后第一次调用才会绑定的符号`lazily symbol`，即延迟绑定的符号，他保存在`__DATA`段中的`__la_symbol_ptr`节区中。延迟绑定符号的绑定操作是在dyld在加载程序时通过`dyld_stub_binder`完成的，这两张表都保存了符号的名称与内存中的地址，符号表hook的原理就是在镜像加载绑定符号时，修改符号表指向的内存地址，通过这种方式来实现hook。
+
+通过开源库[https://github.com/facebook/fishhook](https://github.com/facebook/fishhook)来进行符号表hook。
+
+下面列子是hook `getpid()`的一个例子
+
+```c
+#import "fishhook.h"
+#import <unistd.h>
+#import <stdio.h>
+
+pid_t (*orig_getpid)() = NULL;
+
+pid_t new_getpid() {
+	return (*orig_getpid)() + 1;
+}
+
+int main(int argc, char *argv[]) {
+	pid_t pid = getpid();
+	printf("before hook pid = %d\n", pid);
+    struct rebinding rebindings[1];
+    rebindings[0].name = "getpid";
+    rebindings[0].replacement = new_getpid;
+    rebindings[0].replaced = (void*)&orig_getpid;
+	rebind_symbols(rebindings, 1);
+    pid = getpid();
+    printf("after hook pid = %d\n", pid);
+	return 0;
+}
+
+```
+
