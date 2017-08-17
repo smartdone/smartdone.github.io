@@ -25,3 +25,119 @@ int main(int argc, const char *argv[]) {
 }
 ```
 
+编译mian.c
+
+```shell
+cc mian.c -o app
+```
+
+运行`./app`得到如下结果
+
+```shell
+Mach-O Magic Number: feedfacf
+```
+
+编写hook.c
+
+```c
+#include <stdio.h>
+
+#import <dlfcn.h>
+#import <stdarg.h>
+#import <stdio.h>
+#import <stdlib.h>
+#import <unistd.h>
+#import <stdint.h>
+#import <fcntl.h>
+#import <string.h>
+
+static int (*orig_open)(const char *, int, ...) = NULL;
+static ssize_t (*orig_read)(int, void *, size_t) = NULL;
+static int (*orig_close)(int) = NULL;
+
+typedef int (*orig_open_type)(const char *, int, ...);
+typedef ssize_t (*orig_read_type)(int, void *, size_t);
+typedef int (*orig_close_type)(int);
+
+__attribute__((constructor))
+void init_funcs()
+{
+    printf("--------init funcs.--------\n");
+    void * handle = dlopen("libSystem.dylib", RTLD_NOW);
+    
+    orig_open = (orig_open_type) dlsym(handle, "open");
+    if(!orig_open) {
+        printf("get open() addr error");
+        exit(-1);
+    }
+    orig_read = (orig_read_type) dlsym(handle, "read");
+    if(!orig_read) {
+        printf("get open() addr error");
+        exit(-1);
+    }
+    orig_close = (orig_close_type) dlsym(handle, "close");
+    if(!orig_close) {
+        printf("get open() addr error");
+        exit(-1);
+    }
+    
+    printf("--------init done--------\n");
+}
+
+int open(const char *path, int oflag, ...) {
+    va_list ap = {0};
+    mode_t mode = 0;
+    
+    if ((oflag & O_CREAT) != 0) {
+        // mode only applies to O_CREAT
+        va_start(ap, oflag);
+        mode = va_arg(ap, int);
+        va_end(ap);
+        printf("Calling real open('%s', %d, %d)\n", path, oflag, mode);
+        return orig_open(path, oflag, mode);
+    } else {
+        printf("Calling real open('%s', %d)\n", path, oflag);
+        return orig_open(path, oflag, mode);
+    }
+}
+
+ssize_t read(int fd, void *buf, size_t sz) {
+    printf("Calling real read(%d)\n", fd);
+    ssize_t sz_ = orig_read(fd, buf, sz);
+    if (sz_ == sz) {
+        memset(buf, 97, sz);
+    }
+    return sz_;
+}
+
+int close(int fd) {
+    printf("Calling real close(%d)\n", fd);
+    return orig_close(fd);
+}
+
+```
+
+编译成动态库
+
+```shell
+cc -flat_namespace -dynamiclib -o libhook.dylib hook.c
+```
+
+设置环境变量运行
+
+```shell
+export DYLD_FORCE_FLAT_NAMESPACE=1
+DYLD_INSERT_LIBRARIES=libhook.dylib ./app
+```
+
+运行结果为
+
+```shell
+--------init funcs.--------
+--------init done--------
+Calling real open('./app', 0)
+Calling real read(3)
+Mach-O Magic Number: 61616161
+```
+
+这个程序首先构造了一个初始化的方法`init_funcs`，通过为方法添加预处理指令`__attribute__((constructor))`可以指定该方法为初始化方法，初始化方法会在动态库加载的时候最先被调用，这里这个方法的作用是获取原来三个系统函数的地址，并且保存下来使用。接着在代码里面实现自己要hook的函数的内容，与原函数名称一样。
