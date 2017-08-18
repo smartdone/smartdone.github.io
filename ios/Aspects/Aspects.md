@@ -157,3 +157,10 @@ int main(int argc, char * argv[]) {
 }
 ```
 
+## Notes
+
+在OC中，成员方法记录在class method-list中，类方法记录在meta-class中。即instance-object的信息在class-object中，而class-object的信息在meta-class中。
+
+![](./class.png)
+
+class 是 instance object 的类类型。当我们向实例对象发送消息(实例方法)时，我们在该实例对象的 class 结构的 methodlists 中去查找响应的函数，如果没找到匹配的响应函数则在该 class 的父类中的 methodlists 去查找(查找链为上图的中间那一排)。如下面的代码中，向str 实例对象发送 lowercaseString 消息，会在 NSString 类结构的 methodlists 中去查找 lowercaseString 的响应函数。
