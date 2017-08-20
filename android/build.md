@@ -56,9 +56,35 @@ cd /Volumes/android/
 mkdir WORKING_DIRECTORY 
 cd WORKING_DIRECTORY
 # 初始化仓库
-repo init -u https://aosp.tuna.tsinghua.edu.cn/platform/manifest
+repo init -u https://aosp.tuna.tsinghua.edu.cn/platform/manifest -b android-7.0.0_r33
 # sync android soucre tree
 repo sync
-repo forall -c git checkout -b android-7.1.2_r33_test android-7.1.2_r33
+repo forall -c git checkout -b android-7.0.0_r33_test android-7.0.0_r33
+```
+
+开始编译
+
+```
+export JACK_SERVER_VM_ARGUMENTS="-Dfile.encoding=UTF-8 -XX:+TieredCompilation -Xmx4096m"
+./prebuilts/sdk/tools/jack-admin kill-server 
+./prebuilts/sdk/tools/jack-admin start-server
+source build/envsetup.sh 
+lunch #然后选择需要编译的系统
+make -j4 #x核y线程，就用-j{y}，最大限度使用cpu
+
+```
+
+### 运行模拟器
+
+```
+emulator -system out/target/product/generic/system.img -ramdisk out/target/product/generic/ramdisk.img -data out/target/product/generic/userdata.img
+```
+
+### 注意事项
+
+```
+1. 要下载老一些版本的macos sdk放到xcode里面的对应目录
+2. 要开启jack server
+3. 要创建一个大小写敏感的image
 ```
 
