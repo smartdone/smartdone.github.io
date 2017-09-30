@@ -5,5 +5,6 @@
 - [汇编基础](./asm.md)
 - [hook](./hook.md)
 - [静态代码注入](./staticinject.md)
+- [静态注入OC](./ocinject.md)
 
 
