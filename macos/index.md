@@ -6,5 +6,8 @@
 - [hook](./hook.md)
 - [静态代码注入](./staticinject.md)
 - [静态注入OC](./ocinject.md)
+- [关闭system integrity protection](./protect.md)
+- [dtrace](./dtrace.md)
+- [lldb](./lldb.md)
 
 

@@ -91,7 +91,7 @@ __attribute__((constructor)) void before_load() {
 编译命令
 
 ```
-clang Aspects.m hook.m -I. -fobjc-arc -shared -fPIC -framework objc -o hook.dylib
+clang Aspects.m hook.m -I. -fobjc-arc -shared -fPIC -framework Foundation -o hook.dylib
 ```
 
 注入命令
