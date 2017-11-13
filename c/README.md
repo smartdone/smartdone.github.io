@@ -4,4 +4,8 @@
 代码都是一句一句从第六版的C++ primer plus抄的
 
 - [函数探幽](./methodplus/README.md)
+- [默认参数](./defaultval.md)
+- [函数重载](./mreload.md)
+- [函数模板](./mtemplate.md)
+
 
