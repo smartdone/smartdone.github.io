@@ -7,5 +7,6 @@
 - [默认参数](./defaultval.md)
 - [函数重载](./mreload.md)
 - [函数模板](./mtemplate.md)
+- [类](./class.md)
 
 
