@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="icon" href="ic.png" type="image/x-icon">
+	<title>djx(｡･ω･｡)</title>
+	<meta charset="utf-8"/>
+	<style type="text/css">
+		*{
+			margin:0;
+			padding:0;
+		}
+		.wrap{
+			width:200px;
+			height: 160px;
+			margin:200px auto;
+		}
+		.wrap p{
+			width:200px;
+			height: 160px;
+			position: relative;
+			animation: drop 2s infinite;
+			background-color: transparent; /*test color*/
+		}
+		@keyframes drop{
+			0%{
+				transform:scale(1);
+			}
+			50%{
+				transform:scale(2);
+			}
+			to{
+				transform: scale(1);
+			}
+		}
+		.wrap p:before{
+			content: '';
+			position: absolute;
+			left:0;
+			top:0;
+			width:100px;
+			height: 160px;
+			border-radius:100px 100px 0 0;
+			transform:rotate(45deg);
+			transform-origin: right bottom;
+			background-color: red;
+		}
+		.wrap p:after{
+			content: '';
+			position: absolute;
+			right: 0;
+			top:0;
+			width: 100px;
+			height: 160px;
+			border-radius:100px 100px 0 0;
+			background-color: red;
+			transform:rotate(-45deg);
+			transform-origin:left bottom;
+		}
+	</style>
+</head>
+<body>
+	<div class="wrap">
+		<p></p>
+	</div>
+</body>
+</html>
